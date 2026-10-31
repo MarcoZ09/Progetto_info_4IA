@@ -50,15 +50,12 @@ public class MainMenu extends JFrame {
         titolo.setFont(new Font("Arial", Font.BOLD, 60));
         titolo.setForeground(bianco);
 
-        JButton giocaButton = new JButton("Gioca");
-        JButton impostazioniButton = new JButton("Impostazioni");
-        JButton esciButton = new JButton("Esci dal gioco");
+        JButton giocaButton = new MinecraftButton("Gioca");
+        JButton impostazioniButton = new MinecraftButton("Impostazioni");
+        JButton esciButton = new MinecraftButton("Esci dal gioco");
 
         for (JButton b : new JButton[]{giocaButton, impostazioniButton, esciButton}) {
-            b.setFont(new Font("Arial", Font.BOLD, 28));
-            b.setBackground(nero);
-            b.setForeground(bianco);
-            b.setFocusPainted(false);
+            b.setPreferredSize(new Dimension(360, 64));
         }
 
         // Azione: Gioca (apre la scelta della modalita')
