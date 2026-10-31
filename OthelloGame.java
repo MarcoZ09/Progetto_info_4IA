@@ -70,11 +70,8 @@ public class OthelloGame extends JFrame {
         principale.add(griglia, BorderLayout.CENTER);
 
         // Pulsante per tornare al menu
-        JButton menuButton = new JButton("Torna al menu");
-        menuButton.setFont(new Font("Arial", Font.BOLD, 20));
-        menuButton.setBackground(Color.BLACK);
-        menuButton.setForeground(Color.WHITE);
-        menuButton.setFocusPainted(false);
+        JButton menuButton = new MinecraftButton("Torna al menu");
+        menuButton.setPreferredSize(new Dimension(260, 54));
         menuButton.addActionListener(e -> {
             dispose();
             MainMenu menu = new MainMenu();
