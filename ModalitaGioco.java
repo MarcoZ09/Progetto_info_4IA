@@ -22,15 +22,12 @@ public class ModalitaGioco extends JFrame {
         titolo.setFont(new Font("Arial", Font.BOLD, 50));
         titolo.setForeground(bianco);
 
-        JButton iaButton = new JButton("Gioca contro l'IA");
-        JButton multiButton = new JButton("Multigiocatore (2 giocatori)");
-        JButton indietroButton = new JButton("Indietro");
+        JButton iaButton = new MinecraftButton("Gioca contro l'IA");
+        JButton multiButton = new MinecraftButton("Multigiocatore (2 giocatori)");
+        JButton indietroButton = new MinecraftButton("Indietro");
 
         for (JButton b : new JButton[]{iaButton, multiButton, indietroButton}) {
-            b.setFont(new Font("Arial", Font.BOLD, 28));
-            b.setBackground(nero);
-            b.setForeground(bianco);
-            b.setFocusPainted(false);
+            b.setPreferredSize(new Dimension(420, 64));
         }
 
         // Partita contro l'IA
