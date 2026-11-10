@@ -1,54 +1,40 @@
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Pulsante in stile Minecraft GUI: superfici pixelate, bordo in rilievo
- * e variazioni di luminosita' al passaggio del mouse e alla pressione.
- */
+// Il nome originale rimane uguale per non cambiare i collegamenti del progetto.
 public class MinecraftButton extends JButton {
-    private static final Color BASE = new Color(90, 90, 90);
-    private static final Color HOVER = new Color(120, 120, 120);
-    private static final Color PRESSED = new Color(55, 55, 55);
-    private static final Color LIGHT = new Color(190, 190, 190);
-    private static final Color DARK = new Color(35, 35, 35);
-
     public MinecraftButton(String text) {
         super(text);
-        setFont(new Font("Monospaced", Font.BOLD, 22));
-        setForeground(Color.WHITE);
-        setHorizontalAlignment(SwingConstants.CENTER);
+        setFont(new Font("SansSerif", Font.BOLD, 20));
+        setForeground(Stile.TESTO);
         setFocusPainted(false);
         setBorderPainted(false);
         setContentAreaFilled(false);
         setOpaque(false);
-        setMargin(new Insets(10, 18, 10, 18));
+        setMargin(new Insets(12, 20, 12, 20));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setPreferredSize(new Dimension(420, 58));
     }
 
     @Override
-    protected void paintComponent(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-        int w = getWidth();
-        int h = getHeight();
-
-        Color fill = getModel().isPressed() ? PRESSED
-                : getModel().isRollover() ? HOVER : BASE;
-        g.setColor(fill);
-        g.fillRect(2, 2, w - 4, h - 4);
-
-        // Bordo squadrato con luce in alto/sinistra e ombra in basso/destra.
-        g.setColor(LIGHT);
-        g.fillRect(0, 0, w, 3);
-        g.fillRect(0, 0, 3, h);
-        g.setColor(DARK);
-        g.fillRect(0, h - 3, w, 3);
-        g.fillRect(w - 3, 0, 3, h);
-
-        // Linea interna sottile per richiamare la texture della GUI.
-        g.setColor(new Color(255, 255, 255, 35));
-        g.drawRect(4, 4, Math.max(0, w - 9), Math.max(0, h - 9));
-        g.dispose();
-
-        super.paintComponent(graphics);
+    protected void paintComponent(Graphics g) {
+        // Il colore cambia usando semplici condizioni.
+        Color colore = new Color(48, 83, 68);
+        if (getModel().isPressed()) {
+            colore = new Color(33, 62, 50);
+        } else if (getModel().isRollover()) {
+            colore = new Color(65, 105, 85);
+        }
+        g.setColor(colore);
+        g.fillRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 16, 16);
+        g.setColor(new Color(100, 137, 108));
+        if (hasFocus()) {
+            g.setColor(Stile.ORO);
+        }
+        g.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 16, 16);
+        if (hasFocus()) {
+            g.drawRoundRect(3, 3, getWidth() - 7, getHeight() - 7, 14, 14);
+        }
+        super.paintComponent(g);
     }
 }

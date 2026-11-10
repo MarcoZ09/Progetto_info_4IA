@@ -1,0 +1,24 @@
+PROGETTO OTHELLO - VERSIONE PRONTA DA AVVIARE
+
+1. Estrai completamente lo ZIP in una cartella.
+2. Apri AVVIA.bat con un doppio clic.
+3. Premi Gioca e scegli la modalita'.
+
+Othello.jar e' gia' compilato: non serve un IDE o il compilatore.
+Serve Java 8 o successivo. Sul computer usato per la preparazione
+del progetto e' presente Java 21.
+Puoi anche avviare da terminale con: java -jar Othello.jar
+
+Sono inclusi tutti i sorgenti Java. Se li modifichi, usa COMPILA.bat
+per ricreare Othello.jar (per compilare serve il JDK).
+
+Disponibili: partita locale a due giocatori e partita contro il
+computer con difficolta' facile, media e difficile.
+
+Come richiesto, la parte di Riccardo non e' stata sviluppata:
+cronologia assente, impostazioni ancora come nell'originale,
+messaggi e risultati gia' presenti conservati senza modifiche.
+Il pulsante Impostazioni scrive soltanto sulla console.
+
+La grafica usa Swing e AWT, senza librerie esterne.
+Per le modifiche grafiche consulta LEGGIMI_GRAFICA.txt.

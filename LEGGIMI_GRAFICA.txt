@@ -1,0 +1,41 @@
+OTHELLO - MIGLIORAMENTO DELLA GRAFICA
+
+AVVIO
+Apri il progetto nel tuo IDE Java ed esegui MainMenu.java.
+Oppure, da un terminale aperto in questa cartella:
+  javac -encoding UTF-8 *.java
+  java MainMenu
+Serve il JDK. Non servono librerie o immagini da scaricare.
+
+COSA E' CAMBIATO
+- Menu e scelta della modalita': colori coordinati, testi leggibili,
+  pulsanti centrati e spaziatura regolare.
+- Pulsanti: bordo arrotondato, cambio di colore al passaggio del mouse
+  e bordo dorato quando selezionati con la tastiera.
+- Scacchiera quadrata, coordinate A-H e 1-8, pedine disegnate con cerchi.
+- Finestra con barra del titolo, spostabile e ridimensionabile.
+- Rimosso dal menu lo sfondo codificato in Base64.
+
+CODICE SEMPLICE
+Sono usate soltanto Swing e AWT, gia' presenti nel progetto.
+Le aggiunte usano int, String, Color, if, cicli for e metodi brevi.
+Stile.java raccoglie colori e impostazioni grafiche ripetute.
+Casella.java estende JButton e usa Graphics per disegnare rettangoli
+e cerchi. Non vengono aggiunti framework, animazioni o dipendenze.
+GridBagLayout viene usato senza vincoli, solo per centrare un pannello.
+Le lambda, le liste e il Timer gia' presenti nella logica originale
+sono stati conservati, senza introdurre nuovi algoritmi di gioco.
+
+PARTE DI RICCARDO
+Come indicato nel README originale, non sono state sviluppate:
+- cronologia delle partite;
+- schermata delle impostazioni;
+- nuove funzioni per messaggi e risultati.
+I messaggi, i punteggi e la funzione finale gia' presenti sono invariati.
+Il pulsante Impostazioni conserva l'azione originale sulla console.
+
+VERIFICHE
+Compilazione con javac, controllo visivo delle tre schermate,
+prova di una cattura multigiocatore e di una mossa per ogni livello IA.
+Confronto con l'originale: DiffAI e la logica della partita invariati.
+README.TXT e relazione PDF originali sono conservati.

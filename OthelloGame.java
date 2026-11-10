@@ -30,30 +30,30 @@ public class OthelloGame extends JFrame {
         this.controIA = controIA;
         this.ia = new DiffAI(difficolta);
         setTitle("Othello - Partita");
-        setUndecorated(true);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Stile.preparaFinestra(this);
 
         inizializzaTavola();
 
         JPanel principale = new JPanel(new BorderLayout());
-        principale.setBackground(new Color(0, 100, 0));
+        principale.setBackground(Stile.SFONDO);
 
         // Etichetta in alto con turno e punteggio
         statoLabel = new JLabel("", SwingConstants.CENTER);
-        statoLabel.setFont(new Font("Arial", Font.BOLD, 28));
-        statoLabel.setForeground(Color.WHITE);
+        statoLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        statoLabel.setForeground(Stile.TESTO);
         statoLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         principale.add(statoLabel, BorderLayout.NORTH);
 
         // Griglia di gioco 8x8
         JPanel griglia = new JPanel(new GridLayout(DIMENSIONE, DIMENSIONE, 2, 2));
-        griglia.setBackground(Color.BLACK); // fa da linee della scacchiera
-        griglia.setBorder(BorderFactory.createEmptyBorder(30, 250, 30, 250));
+        griglia.setBackground(new Color(22, 56, 40));
+        griglia.setBorder(BorderFactory.createLineBorder(Stile.ORO, 3));
+        // Dimensioni uguali per larghezza e altezza: le caselle restano quadrate.
+        griglia.setPreferredSize(new Dimension(520, 520));
 
         for (int r = 0; r < DIMENSIONE; r++) {
             for (int c = 0; c < DIMENSIONE; c++) {
-                JButton cella = new JButton();
+                JButton cella = new Casella();
                 cella.setOpaque(true);
                 cella.setBorderPainted(false);
                 cella.setBackground(new Color(0, 100, 0));
@@ -67,7 +67,23 @@ public class OthelloGame extends JFrame {
                 griglia.add(cella);
             }
         }
-        principale.add(griglia, BorderLayout.CENTER);
+        JPanel cornice = new JPanel(new BorderLayout(8, 8));
+        cornice.setOpaque(false);
+        cornice.add(griglia, BorderLayout.CENTER);
+        JPanel lettere = new JPanel(new GridLayout(1, 8));
+        lettere.setOpaque(false);
+        String[] nomiColonne = {"A", "B", "C", "D", "E", "F", "G", "H"};
+        for (int c = 0; c < DIMENSIONE; c++) {
+            lettere.add(Stile.etichetta(nomiColonne[c], 14, Stile.ORO));
+        }
+        JPanel numeri = new JPanel(new GridLayout(8, 1));
+        numeri.setOpaque(false);
+        for (int r = 0; r < DIMENSIONE; r++) {
+            numeri.add(Stile.etichetta("" + (r + 1), 14, Stile.ORO));
+        }
+        cornice.add(lettere, BorderLayout.NORTH);
+        cornice.add(numeri, BorderLayout.WEST);
+        principale.add(Stile.centra(cornice), BorderLayout.CENTER);
 
         // Pulsante per tornare al menu
         JButton menuButton = new MinecraftButton("Torna al menu");
@@ -79,7 +95,8 @@ public class OthelloGame extends JFrame {
         });
 
         JPanel sud = new JPanel();
-        sud.setBackground(new Color(0, 100, 0));
+        sud.setBackground(Stile.SFONDO);
+        sud.setBorder(BorderFactory.createEmptyBorder(8, 0, 14, 0));
         sud.add(menuButton);
         principale.add(sud, BorderLayout.SOUTH);
 
