@@ -7,7 +7,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-jar cfe "Othello.jar" MainMenu -C "classi" .
+jar cfe "Othello.jar" MainMenu -C "classi" . -C . Immagini
 if errorlevel 1 (
     echo Creazione del file JAR non riuscita.
     pause

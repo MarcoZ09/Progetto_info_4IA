@@ -15,6 +15,13 @@ public class Stile {
         finestra.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    public static void cambiaSchermata(JFrame attuale, JFrame nuova) {
+        nuova.setBounds(attuale.getBounds());
+        nuova.setExtendedState(attuale.getExtendedState());
+        nuova.setVisible(true);
+        attuale.dispose();
+    }
+
     public static JLabel etichetta(String testo, int dimensione, Color colore) {
         JLabel label = new JLabel(testo, SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.BOLD, dimensione));

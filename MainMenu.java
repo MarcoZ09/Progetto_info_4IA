@@ -25,9 +25,7 @@ public class MainMenu extends JFrame {
         JButton esciButton = new MinecraftButton("Esci dal gioco");
         // Azione: Gioca (apre la scelta della modalita')
         giocaButton.addActionListener(e -> {
-            dispose(); // chiude il menu
-            ModalitaGioco scelta = new ModalitaGioco();
-            scelta.setVisible(true);
+            Stile.cambiaSchermata(this, new ModalitaGioco());
         });
 
         // Azione: Impostazioni

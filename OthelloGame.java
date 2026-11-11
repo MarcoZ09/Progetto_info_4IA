@@ -89,9 +89,7 @@ public class OthelloGame extends JFrame {
         JButton menuButton = new MinecraftButton("Torna al menu");
         menuButton.setPreferredSize(new Dimension(260, 54));
         menuButton.addActionListener(e -> {
-            dispose();
-            MainMenu menu = new MainMenu();
-            menu.setVisible(true);
+            Stile.cambiaSchermata(this, new MainMenu());
         });
 
         JPanel sud = new JPanel();
