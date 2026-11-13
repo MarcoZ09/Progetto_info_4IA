@@ -1,5 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Area;
+import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.Random;
 
 public class Allenamento extends JFrame {
@@ -104,38 +107,83 @@ public class Allenamento extends JFrame {
         punti.add(puntiNero);
         punti.add(puntiBianco);
         info.add(punti);
-        info.setPreferredSize(new Dimension(202, 200));
+        info.setPreferredSize(new Dimension(202, 196));
         return info;
     }
 
     private JPanel pannelloMaestro() {
-        JPanel maestro = new JPanel(new BorderLayout(0, 0));
-        Color salvia = new Color(44, 71, 60);
-        maestro.setBackground(salvia);
-        maestro.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 4));
-        maestro.setPreferredSize(new Dimension(530, 244));
-        // Il viso è sopra il centro della GIF: il margine lo porta al centro del riquadro.
-        mascotte.setOpaque(false);
-        mascotte.setBorder(BorderFactory.createEmptyBorder(48, 0, 0, 0));
-        mascotte.setPreferredSize(new Dimension(230, 196));
-        maestro.add(mascotte, BorderLayout.EAST);
+        return pannelloDialogo(mascotte, fumetto);
+    }
 
-        JPanel nuvola = new JPanel(new BorderLayout(0, 6));
+    static JPanel pannelloDialogo(JLabel mascotte, JTextArea fumetto) {
+        JPanel maestro = new JPanel(new BorderLayout(4, 0));
+        maestro.setOpaque(false);
+        maestro.setPreferredSize(new Dimension(530, 196));
+
+        JPanel ritratto = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D penna = (Graphics2D) g.create();
+                penna.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                int y = (getHeight() - 102) / 2;
+                penna.setColor(new Color(58, 85, 67));
+                penna.fillRoundRect(0, y, 102, 102, 24, 24);
+                penna.setColor(new Color(90, 117, 88));
+                penna.drawRoundRect(0, y, 101, 101, 24, 24);
+                penna.dispose();
+            }
+        };
+        ritratto.setOpaque(false);
+        ritratto.setPreferredSize(new Dimension(102, 102));
+        // Centra la parte visibile del personaggio nel fotogramma trasparente.
+        mascotte.setBorder(BorderFactory.createEmptyBorder(46, 0, 0, 0));
+        ritratto.add(mascotte);
+        maestro.add(ritratto, BorderLayout.WEST);
+
+        JPanel nuvola = new JPanel(new BorderLayout(0, 8)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D penna = (Graphics2D) g.create();
+                penna.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                int centro = getHeight() / 2;
+                Area forma = new Area(new RoundRectangle2D.Double(
+                        12, 2, getWidth() - 13, getHeight() - 7, 24, 24));
+                Path2D punta = new Path2D.Double();
+                punta.moveTo(14, centro - 10);
+                punta.lineTo(0, centro);
+                punta.lineTo(14, centro + 10);
+                punta.closePath();
+                forma.add(new Area(punta));
+                penna.translate(0, 3);
+                penna.setColor(new Color(0, 0, 0, 60));
+                penna.fill(forma);
+                penna.translate(0, -3);
+                penna.setColor(new Color(250, 248, 240));
+                penna.fill(forma);
+                penna.dispose();
+            }
+        };
         nuvola.setOpaque(false);
-        nuvola.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 30));
+        nuvola.setBorder(BorderFactory.createEmptyBorder(16, 30, 17, 17));
         JLabel nome = new JLabel("Maestro Pedina");
         nome.setFont(new Font("SansSerif", Font.BOLD, 16));
-        nome.setForeground(oro);
+        nome.setForeground(new Color(64, 98, 51));
         nuvola.add(nome, BorderLayout.NORTH);
         fumetto.setEditable(false);
         fumetto.setLineWrap(true);
         fumetto.setWrapStyleWord(true);
         fumetto.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        fumetto.setForeground(Stile.TESTO);
-        fumetto.setBackground(salvia);
+        fumetto.setForeground(new Color(42, 47, 40));
+        fumetto.setOpaque(false);
         JScrollPane testo = new JScrollPane(fumetto);
         testo.setBorder(null);
-        testo.getViewport().setBackground(salvia);
+        testo.setOpaque(false);
+        testo.getViewport().setOpaque(false);
+        testo.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         nuvola.add(testo, BorderLayout.CENTER);
         maestro.add(nuvola, BorderLayout.CENTER);
         return maestro;
