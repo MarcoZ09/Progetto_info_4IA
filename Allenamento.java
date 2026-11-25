@@ -9,7 +9,8 @@ public class Allenamento extends JFrame {
 
     // 0 = vuoto, 1 = giocatore nero, 2 = bot bianco.
     private int[][] tavola = new int[8][8];
-    private Cella[][] celle = new Cella[8][8];
+    private final Casella[][] celle = new Casella[8][8];
+    private final AnimazioneMossa animazione = new AnimazioneMossa(celle);
 
     private JTextArea fumetto = new JTextArea();
     private JLabel stato = new JLabel();
@@ -47,8 +48,7 @@ public class Allenamento extends JFrame {
         setTitle("Allenamento con Maestro Pedina");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        JPanel principale = new JPanel(new BorderLayout(0, 12));
-        principale.setBackground(sfondo);
+        JPanel principale = new Sfondo(new BorderLayout(0, 12));
         principale.setBorder(BorderFactory.createEmptyBorder(12, 18, 12, 18));
 
         JPanel fascia = new JPanel(new BorderLayout(16, 0));
@@ -73,6 +73,9 @@ public class Allenamento extends JFrame {
         tavola[4][4] = 2;
         tavola[3][4] = 1;
         tavola[4][3] = 1;
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) celle[r][c].mostra(tavola[r][c]);
+        }
 
         consiglio(
                 "Ciao! Sono Maestro Pedina. Tu giochi con il Nero. "
@@ -205,7 +208,7 @@ public class Allenamento extends JFrame {
         for (int r = 0; r < 8; r++) {
             numeri.add(etichetta("" + (r + 1)));
             for (int c = 0; c < 8; c++) {
-                celle[r][c] = new Cella(r, c);
+                celle[r][c] = new Casella(r, c);
                 final int riga = r;
                 final int colonna = c;
                 celle[r][c].addActionListener(e -> gioca(riga, colonna));
@@ -403,7 +406,7 @@ public class Allenamento extends JFrame {
     }
 
     private void gioca(int r, int c) {
-        if (attesa || finita) {
+        if (attesa || finita || animazione.inCorso()) {
             return;
         }
 
@@ -441,7 +444,8 @@ public class Allenamento extends JFrame {
         suggeritaR = -1;
         suggeritaC = -1;
 
-        prossimoTurno(2);
+        aggiorna();
+        animazione.avvia(tavola, r, c, () -> prossimoTurno(2));
     }
 
     private void prossimoTurno(int colore) {
@@ -538,9 +542,10 @@ public class Allenamento extends JFrame {
             } else if (!consiglioSeguito && pedinePerse > 0) {
                 mascotte.setIcon(arrabbiata);
             }
+            animazione.avvia(tavola, r, c, () -> prossimoTurno(1));
+        } else {
+            prossimoTurno(1);
         }
-
-        prossimoTurno(1);
     }
 
     private int conta(int colore) {
@@ -574,63 +579,21 @@ public class Allenamento extends JFrame {
         puntiNero.setText("Nero  " + conta(1));
         puntiBianco.setText("Bianco  " + conta(2));
 
-        repaint();
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                celle[r][c].suggerisci(r == suggeritaR && c == suggeritaC);
+            }
+        }
     }
 
     @Override
     public void dispose() {
+        animazione.ferma();
         if (timer != null) {
             timer.stop();
         }
 
         super.dispose();
-    }
-
-    // Casella che disegna la pedina e il suggerimento.
-    private class Cella extends JButton {
-        private int r;
-        private int c;
-
-        public Cella(int riga, int colonna) {
-            r = riga;
-            c = colonna;
-            setContentAreaFilled(false);
-            setBorderPainted(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            g.setColor(new Color(58, 116, 87));
-            g.fillRect(0, 0, getWidth(), getHeight());
-
-            if (tavola[r][c] != 0) {
-                if (tavola[r][c] == 1) {
-                    g.setColor(Color.BLACK);
-                } else {
-                    g.setColor(Stile.TESTO);
-                }
-
-                int d = Math.min(getWidth(), getHeight()) - 12;
-
-                g.fillOval(
-                        (getWidth() - d) / 2,
-                        (getHeight() - d) / 2,
-                        d, d
-                );
-            }
-
-            if (r == suggeritaR && c == suggeritaC) {
-                g.setColor(oro);
-                g.drawRect(
-                        2, 2, getWidth() - 5, getHeight() - 5
-                );
-                g.fillOval(
-                        getWidth() / 2 - 5,
-                        getHeight() / 2 - 5,
-                        10, 10
-                );
-            }
-        }
     }
 
     public static void main(String[] args) {

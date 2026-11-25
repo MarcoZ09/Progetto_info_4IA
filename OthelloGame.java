@@ -15,7 +15,9 @@ public class OthelloGame extends JFrame {
     private static final int[] DY = {-1, 0, 1, -1, 1, -1, 0, 1};
 
     private int[][] tavola = new int[DIMENSIONE][DIMENSIONE];
-    private JButton[][] celle = new JButton[DIMENSIONE][DIMENSIONE];
+    private final Casella[][] celle = new Casella[DIMENSIONE][DIMENSIONE];
+    private final AnimazioneMossa animazione = new AnimazioneMossa(celle);
+    private Timer pausaIA;
     private int turno = NERO; // il nero inizia sempre, come nelle regole ufficiali
     private JLabel statoLabel;
     private boolean controIA; // true = contro IA, false = due giocatori
@@ -34,8 +36,7 @@ public class OthelloGame extends JFrame {
 
         inizializzaTavola();
 
-        JPanel principale = new JPanel(new BorderLayout());
-        principale.setBackground(Stile.SFONDO);
+        JPanel principale = new Sfondo(new BorderLayout());
 
         // Etichetta in alto con turno e punteggio
         statoLabel = new JLabel("", SwingConstants.CENTER);
@@ -53,13 +54,8 @@ public class OthelloGame extends JFrame {
 
         for (int r = 0; r < DIMENSIONE; r++) {
             for (int c = 0; c < DIMENSIONE; c++) {
-                JButton cella = new Casella();
-                cella.setOpaque(true);
-                cella.setBorderPainted(false);
-                cella.setBackground(new Color(0, 100, 0));
-                cella.setFont(new Font("Arial", Font.PLAIN, 36));
-                cella.setFocusPainted(false);
-
+                Casella cella = new Casella(r, c);
+                cella.mostra(tavola[r][c]);
                 final int riga = r, colonna = c;
                 cella.addActionListener(e -> gestisciMossaUmano(riga, colonna));
 
@@ -81,9 +77,13 @@ public class OthelloGame extends JFrame {
         for (int r = 0; r < DIMENSIONE; r++) {
             numeri.add(Stile.etichetta("" + (r + 1), 14, Stile.ORO));
         }
+        lettere.setBorder(BorderFactory.createEmptyBorder(0, numeri.getPreferredSize().width + 8, 0, 0));
         cornice.add(lettere, BorderLayout.NORTH);
         cornice.add(numeri, BorderLayout.WEST);
-        principale.add(Stile.centra(cornice), BorderLayout.CENTER);
+        JPanel centro = new JPanel(new GridBagLayout());
+        centro.setOpaque(false);
+        centro.add(cornice);
+        principale.add(centro, BorderLayout.CENTER);
 
         // Pulsante per tornare al menu
         JButton menuButton = new MinecraftButton("Torna al menu");
@@ -93,7 +93,7 @@ public class OthelloGame extends JFrame {
         });
 
         JPanel sud = new JPanel();
-        sud.setBackground(Stile.SFONDO);
+        sud.setOpaque(false);
         sud.setBorder(BorderFactory.createEmptyBorder(8, 0, 14, 0));
         sud.add(menuButton);
         principale.add(sud, BorderLayout.SOUTH);
@@ -117,13 +117,19 @@ public class OthelloGame extends JFrame {
 
     // Chiamato quando il giocatore umano clicca su una cella
     private void gestisciMossaUmano(int riga, int colonna) {
+        if (animazione.inCorso()) return;
         if (controIA && turno != NERO) return; // contro IA: il giocatore e' solo il Nero
         if (!mossaValida(riga, colonna, turno)) return;
 
+        giocaMossa(riga, colonna);
+    }
+
+    private void giocaMossa(int riga, int colonna) {
         eseguiMossa(riga, colonna, turno);
-        turno = (turno == NERO) ? BIANCO : NERO;
-        aggiornaSchermo();
-        procediTurno();
+        animazione.avvia(tavola, riga, colonna, () -> {
+            turno = (turno == NERO) ? BIANCO : NERO;
+            procediTurno();
+        });
     }
 
     // Controlla chi deve giocare, gestisce i turni saltati e la fine partita
@@ -146,9 +152,9 @@ public class OthelloGame extends JFrame {
 
         if (controIA && turno == BIANCO) {
             // piccola pausa per dare l'impressione che l'IA stia "pensando"
-            javax.swing.Timer timer = new javax.swing.Timer(500, e -> mossaIA());
-            timer.setRepeats(false);
-            timer.start();
+            pausaIA = new Timer(500, e -> mossaIA());
+            pausaIA.setRepeats(false);
+            pausaIA.start();
         }
     }
 
@@ -170,12 +176,11 @@ public class OthelloGame extends JFrame {
 
         Move mossa = ia.getBestMove(tavolaComeChar(), 'O', mosseValide, logica);
         if (mossa != null) {
-            eseguiMossa(mossa.getRow(), mossa.getCol(), BIANCO);
+            giocaMossa(mossa.getRow(), mossa.getCol());
+        } else {
+            turno = NERO;
+            procediTurno();
         }
-
-        turno = NERO;
-        aggiornaSchermo();
-        procediTurno();
     }
 
     // Converte la scacchiera in char[][] per DiffAI: 'X' = Nero, 'O' = Bianco, '.' = vuoto
@@ -279,23 +284,14 @@ public class OthelloGame extends JFrame {
         return !esisteMossaValida(NERO) && !esisteMossaValida(BIANCO);
     }
 
-    // Ridisegna tutte le celle e aggiorna il testo del turno/punteggio
-    private void aggiornaSchermo() {
-        for (int r = 0; r < DIMENSIONE; r++) {
-            for (int c = 0; c < DIMENSIONE; c++) {
-                JButton cella = celle[r][c];
-                if (tavola[r][c] == NERO) {
-                    cella.setText("\u25CF");
-                    cella.setForeground(Color.BLACK);
-                } else if (tavola[r][c] == BIANCO) {
-                    cella.setText("\u25CF");
-                    cella.setForeground(Color.WHITE);
-                } else {
-                    cella.setText("");
-                }
-            }
-        }
+    @Override
+    public void dispose() {
+        animazione.ferma();
+        if (pausaIA != null) pausaIA.stop();
+        super.dispose();
+    }
 
+    private void aggiornaSchermo() {
         int pezziNeri = contaPezzi(NERO);
         int pezziBianchi = contaPezzi(BIANCO);
         String turnoTesto;

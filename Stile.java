@@ -31,8 +31,7 @@ public class Stile {
 
     // GridBagLayout senza vincoli mantiene il pannello al centro della finestra.
     public static JPanel centra(JPanel contenuto) {
-        JPanel sfondo = new JPanel(new GridBagLayout());
-        sfondo.setBackground(SFONDO);
+        JPanel sfondo = new Sfondo(new GridBagLayout());
         sfondo.add(contenuto);
         return sfondo;
     }
