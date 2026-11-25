@@ -9,10 +9,12 @@ Serve il JDK. Non servono librerie o immagini da scaricare.
 
 COSA E' CAMBIATO
 - Menu e scelta della modalita': colori coordinati, testi leggibili,
-  pulsanti centrati e spaziatura regolare.
+  pulsanti centrati e sfondo verde a trama fine con incisioni dorate.
 - Pulsanti: bordo arrotondato, cambio di colore al passaggio del mouse
   e bordo dorato quando selezionati con la tastiera.
-- Scacchiera quadrata, coordinate A-H e 1-8, pedine disegnate con cerchi.
+- Scacchiera quadrata, coordinate A-H e 1-8, pedine in grafite e avorio.
+- La nuova pedina si posa sul tavolo. Le catture si ribaltano in
+  sequenza dalla casella giocata, anche durante l'allenamento.
 - Finestra con barra del titolo, spostabile e ridimensionabile.
 - Rimosso dal menu lo sfondo codificato in Base64.
 
@@ -20,11 +22,9 @@ CODICE SEMPLICE
 Sono usate soltanto Swing e AWT, gia' presenti nel progetto.
 Le aggiunte usano int, String, Color, if, cicli for e metodi brevi.
 Stile.java raccoglie colori e impostazioni grafiche ripetute.
-Casella.java estende JButton e usa Graphics per disegnare rettangoli
-e cerchi. Non vengono aggiunti framework, animazioni o dipendenze.
-GridBagLayout viene usato senza vincoli, solo per centrare un pannello.
-Le lambda, le liste e il Timer gia' presenti nella logica originale
-sono stati conservati, senza introdurre nuovi algoritmi di gioco.
+Casella.java disegna le pedine con Swing e AWT. AnimazioneMossa.java
+usa un Timer Swing condiviso dalle caselle della stessa scacchiera.
+Sfondo.java conserva una copia del disegno fino al ridimensionamento.
 
 PARTE DI RICCARDO
 Come indicato nel README originale, non sono state sviluppate:
