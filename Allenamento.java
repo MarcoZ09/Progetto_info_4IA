@@ -12,6 +12,12 @@ public class Allenamento extends JFrame {
     private final AnimazioneMossa animazione = new AnimazioneMossa(celle);
 
     private JTextArea fumetto = new JTextArea();
+    private JLabel titoloFumetto = new JLabel();
+    private JLabel casellaFumetto = new JLabel("", SwingConstants.CENTER);
+    private JButton leggiSubito = new JButton("Leggi subito");
+    private static final Color VERDE = new Color(44, 100, 65);
+    private static final Color AMBRA = new Color(134, 75, 19);
+    private static final Color BLU = new Color(49, 83, 111);
     private JLabel stato = new JLabel();
     private JLabel puntiNero = new JLabel("", SwingConstants.CENTER);
     private JLabel puntiBianco = new JLabel("", SwingConstants.CENTER);
@@ -31,9 +37,10 @@ public class Allenamento extends JFrame {
     }
 
     private JPanel spazioNuvola = new JPanel(new BorderLayout());
-    private Timer scrittura = new Timer(45, e -> avanzaFumetto());
+    private Timer scrittura = new Timer(20, e -> avanzaFumetto());
     private String frase;
     private int lettereVisibili;
+    private int scatto;
     private boolean animaFumetto;
     private String ultimaMossaBot = "";
     private Timer timer;
@@ -169,15 +176,39 @@ public class Allenamento extends JFrame {
                 penna.translate(0, -3);
                 penna.setColor(new Color(250, 248, 240));
                 penna.fill(forma);
+                penna.setColor(titoloFumetto.getForeground());
+                penna.setStroke(new BasicStroke(1.5f));
+                penna.draw(forma);
                 penna.dispose();
             }
         };
         nuvola.setOpaque(false);
         nuvola.setBorder(BorderFactory.createEmptyBorder(16, 30, 17, 17));
-        JLabel nome = new JLabel("Othellity  ·  Il tuo allenatore");
-        nome.setFont(new Font("SansSerif", Font.BOLD, 16));
-        nome.setForeground(new Color(64, 98, 51));
-        nuvola.add(nome, BorderLayout.NORTH);
+        JPanel testata = new JPanel(new BorderLayout(0, 5));
+        testata.setOpaque(false);
+        JPanel firma = new JPanel(new BorderLayout());
+        firma.setOpaque(false);
+        JLabel nome = new JLabel("Othellity");
+        nome.setFont(new Font("SansSerif", Font.BOLD, 14));
+        nome.setForeground(new Color(77, 85, 72));
+        firma.add(nome, BorderLayout.WEST);
+        leggiSubito.setMargin(new Insets(1, 8, 1, 8));
+        firma.setPreferredSize(new Dimension(1, leggiSubito.getPreferredSize().height));
+        leggiSubito.addActionListener(e -> completaFumetto());
+        firma.add(leggiSubito, BorderLayout.EAST);
+        testata.add(firma, BorderLayout.NORTH);
+
+        JPanel giudizio = new JPanel(new BorderLayout(8, 0));
+        giudizio.setOpaque(false);
+        casellaFumetto.setOpaque(true);
+        casellaFumetto.setForeground(Color.WHITE);
+        casellaFumetto.setFont(new Font("SansSerif", Font.BOLD, 16));
+        casellaFumetto.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
+        giudizio.add(casellaFumetto, BorderLayout.WEST);
+        titoloFumetto.setFont(new Font("SansSerif", Font.BOLD, Archivio.testoGrande ? 22 : 19));
+        giudizio.add(titoloFumetto, BorderLayout.CENTER);
+        testata.add(giudizio, BorderLayout.CENTER);
+        nuvola.add(testata, BorderLayout.NORTH);
         fumetto.setEditable(false);
         fumetto.setLineWrap(true);
         fumetto.setWrapStyleWord(true);
@@ -249,6 +280,20 @@ public class Allenamento extends JFrame {
         return r >= 0 && r < 8 && c >= 0 && c < 8;
     }
 
+    // Conta le pedine avversarie chiuse tra la mossa e una pedina dello stesso colore.
+    private int cattureInLinea(int r, int c, int colore, int dr, int dc) {
+        r += dr;
+        c += dc;
+        int numero = 0;
+        while (dentro(r, c) && tavola[r][c] == 3 - colore) {
+            numero++;
+            r += dr;
+            c += dc;
+        }
+        if (dentro(r, c) && tavola[r][c] == colore) return numero;
+        return 0;
+    }
+
     /*
      * Se applica è false, conta soltanto le catture.
      * Se applica è true, gira anche le pedine.
@@ -270,25 +315,11 @@ public class Allenamento extends JFrame {
                     continue;
                 }
 
-                int r = riga + dr;
-                int c = colonna + dc;
-                int numero = 0;
-
-                while (dentro(r, c)
-                        && tavola[r][c] == 3 - colore) {
-                    numero++;
-                    r += dr;
-                    c += dc;
-                }
-
-                if (dentro(r, c) && tavola[r][c] == colore) {
-                    totale += numero;
-
-                    if (applica) {
-                        for (int i = 1; i <= numero; i++) {
-                            tavola[riga + dr * i]
-                                  [colonna + dc * i] = colore;
-                        }
+                int numero = cattureInLinea(riga, colonna, colore, dr, dc);
+                totale += numero;
+                if (applica) {
+                    for (int i = 1; i <= numero; i++) {
+                        tavola[riga + dr * i][colonna + dc * i] = colore;
                     }
                 }
             }
@@ -340,7 +371,17 @@ public class Allenamento extends JFrame {
         if (angolo(r, c)) return "Una pedina nell’angolo è tua fino alla fine.";
         if (rischio(r, c)) return "Occhio all’angolo vuoto vicino. Il Bianco potrebbe conquistarlo.";
         if (r == 0 || r == 7 || c == 0 || c == 7) return "Sul bordo puoi essere attaccato da meno direzioni.";
-        return "Con questa mossa giri pedine all’interno della scacchiera.";
+        for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) continue;
+                int numero = cattureInLinea(r, c, 1, dr, dc);
+                if (numero > 0) {
+                    String fine = nome(r + dr * (numero + 1), c + dc * (numero + 1));
+                    return "La tua pedina in " + fine + " chiude la linea con " + nome(r, c) + ".";
+                }
+            }
+        }
+        return "";
     }
 
     private String numeroPedine(int numero) {
@@ -350,28 +391,49 @@ public class Allenamento extends JFrame {
         return numero + " pedine";
     }
 
-    private void parla(String testo) {
+    private void parla(String titolo, String casella, Color colore, String testo) {
         scrittura.stop();
+        titoloFumetto.setText(titolo);
+        titoloFumetto.setForeground(colore);
+        casellaFumetto.setText(casella);
+        casellaFumetto.setBackground(colore);
+        casellaFumetto.setVisible(!casella.isEmpty());
         frase = testo;
         lettereVisibili = 0;
+        scatto = 0;
         if (animaFumetto) {
+            leggiSubito.setVisible(true);
             avanzaFumetto();
-            if (lettereVisibili < frase.length()) scrittura.start();
+            scrittura.start();
         } else {
-            fumetto.setText(frase);
+            completaFumetto();
         }
-        fumetto.setCaretPosition(0);
     }
 
-    // A ogni scatto compare una parola e la nuvola entra di pochi pixel.
+    // Il fumetto entra di lato per i primi otto scatti. Il testo continua al suo ritmo.
     private void avanzaFumetto() {
-        int spazio = frase.indexOf(' ', lettereVisibili);
-        lettereVisibili = spazio < 0 ? frase.length() : spazio + 1;
-        int margine = Math.max(0, 16 - lettereVisibili);
-        spazioNuvola.setBorder(BorderFactory.createEmptyBorder(margine, 0, 0, 0));
-        fumetto.setText(frase.substring(0, lettereVisibili));
+        scatto++;
+        if (scatto <= 8) {
+            int margine = (8 - scatto) * (8 - scatto) / 2;
+            spazioNuvola.setBorder(BorderFactory.createEmptyBorder(0, margine, 0, 0));
+        }
+        if (scatto % 2 == 1 && lettereVisibili < frase.length()) {
+            int spazio = frase.indexOf(' ', lettereVisibili);
+            int fine = spazio < 0 ? frase.length() : spazio + 1;
+            if (lettereVisibili == 0) fumetto.setText("");
+            fumetto.append(frase.substring(lettereVisibili, fine));
+            lettereVisibili = fine;
+            fumetto.setCaretPosition(0);
+        }
+        if (scatto >= 8 && lettereVisibili == frase.length()) completaFumetto();
+    }
+
+    private void completaFumetto() {
+        scrittura.stop();
+        spazioNuvola.setBorder(null);
+        leggiSubito.setVisible(false);
+        fumetto.setText(frase);
         fumetto.setCaretPosition(0);
-        if (lettereVisibili == frase.length()) scrittura.stop();
     }
 
     private Move mossaMigliore(int colore) {
@@ -397,7 +459,8 @@ public class Allenamento extends JFrame {
         suggeritaR = scelta.getRow();
         suggeritaC = scelta.getCol();
         pedineConsigliate = catture(suggeritaR, suggeritaC, 1, false);
-        parla(inizio + "Prova " + nome(suggeritaR, suggeritaC) + " per girare "
+        parla("Il mio consiglio", nome(suggeritaR, suggeritaC), VERDE,
+                inizio + "Prova " + nome(suggeritaR, suggeritaC) + " per girare "
                 + numeroPedine(pedineConsigliate) + ". " + motivo(suggeritaR, suggeritaC));
     }
 
@@ -423,22 +486,38 @@ public class Allenamento extends JFrame {
             mascotte.setIcon(neutra);
             String aiuto = "Da qui non racchiudi nessuna pedina bianca. ";
             if (tavola[r][c] != 0) aiuto = nome(r, c) + " è già occupata. ";
-            consiglio(aiuto);
+            parla("Riprova", nome(r, c), AMBRA, aiuto + "Prova la casella dorata, "
+                    + nome(suggeritaR, suggeritaC) + ".");
             return;
         }
 
         consiglioSeguito = (r == suggeritaR && c == suggeritaC);
-        String commento = "Hai giocato in ";
+        String titolo = "La tua mossa";
+        Color colore = BLU;
         if (consiglioSeguito) {
             mascotte.setIcon(felice);
-            commento = "Hai seguito il consiglio in ";
+            titolo = "Consiglio seguito";
+            colore = VERDE;
         } else if (pedinePrese > pedineConsigliate) {
             mascotte.setIcon(occhiali);
-            commento = "Hai girato più pedine del previsto! Hai giocato in ";
+            titolo = "Più catture";
         } else {
             mascotte.setIcon(neutra);
         }
-        parla(commento + nome(r, c) + " e girato " + numeroPedine(pedinePrese) + ". " + motivo(r, c));
+        String dettaglio = motivo(r, c);
+        if (angolo(r, c)) {
+            titolo = "Angolo conquistato";
+            colore = VERDE;
+        } else if (rischio(r, c)) {
+            titolo = "Angolo a rischio";
+            colore = AMBRA;
+        } else if (!consiglioSeguito && punti(r, c, pedinePrese)
+                == punti(suggeritaR, suggeritaC, pedineConsigliate)) {
+            titolo = "Buona alternativa";
+            colore = VERDE;
+            dettaglio = "Nella mia valutazione vale quanto " + nome(suggeritaR, suggeritaC) + ".";
+        }
+        parla(titolo, nome(r, c), colore, "Hai girato " + numeroPedine(pedinePrese) + ". " + dettaglio);
         attesa = true;
         catture(r, c, 1, true);
         tavola[r][c] = 1;
@@ -463,7 +542,7 @@ public class Allenamento extends JFrame {
             if (neri > bianchi) mascotte.setIcon(felice);
             else if (neri < bianchi) mascotte.setIcon(triste);
             else mascotte.setIcon(neutra);
-            parla(risultato);
+            parla("Partita conclusa", "", BLU, risultato);
             Archivio.registra(this, "Allenamento", risultato);
             return;
         }
@@ -485,7 +564,7 @@ public class Allenamento extends JFrame {
 
         if (attesa) {
             if (!avviso.isEmpty()) {
-                parla(ultimaMossaBot + avviso);
+                parla("Passi il turno", "", AMBRA, ultimaMossaBot + avviso);
             }
 
             // La pausa permette di leggere il commento.

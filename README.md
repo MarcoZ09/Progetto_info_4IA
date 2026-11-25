@@ -42,6 +42,8 @@ Esempio: girare una pedina in A1 vale 101 punti. Girarne tre al centro vale 3. I
 
 Dal menu principale apri **Impostazioni** per scegliere se far apparire il testo parola per parola e se usare caratteri più grandi nel fumetto. Le scelte valgono dal prossimo allenamento e vengono conservate alla chiusura del gioco.
 
+In Allenamento la casella in testa al fumetto indica la mossa che Othellity sta commentando. Se scegli una mossa che ottiene gli stessi punti di quella suggerita, vedrai **Buona alternativa**. Durante l’animazione puoi premere **Leggi subito** per leggere il commento completo.
+
 In **Cronologia partite** trovi le partite concluse in tutte e tre le modalità, dalla più recente, con data, modalità, esito e punteggio. Se esci a metà, la partita non viene registrata. I file `partite.txt` e `impostazioni.txt` si trovano nella cartella `Othello4IA` del tuo profilo utente.
 
 ## Le regole in breve
