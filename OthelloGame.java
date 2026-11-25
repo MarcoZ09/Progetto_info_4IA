@@ -22,6 +22,9 @@ public class OthelloGame extends JFrame {
     private JLabel statoLabel;
     private boolean controIA; // true = contro IA, false = due giocatori
 
+    private boolean finita;
+    private String nomeModalita;
+    private JLabel messaggio = Stile.etichetta("Scegli una casella per giocare.", 15, Stile.ORO);
     private DiffAI ia; // l'IA (facile / medio / difficile)
 
     public OthelloGame(boolean controIA) {
@@ -31,6 +34,13 @@ public class OthelloGame extends JFrame {
     public OthelloGame(boolean controIA, String difficolta) {
         this.controIA = controIA;
         this.ia = new DiffAI(difficolta);
+        nomeModalita = "Multigiocatore";
+        if (controIA) {
+            String livello = "Medio";
+            if ("easy".equals(difficolta)) livello = "Facile";
+            if ("hard".equals(difficolta)) livello = "Difficile";
+            nomeModalita = "Contro IA · " + livello;
+        }
         setTitle("Othello - Partita");
         Stile.preparaFinestra(this);
 
@@ -96,7 +106,11 @@ public class OthelloGame extends JFrame {
         sud.setOpaque(false);
         sud.setBorder(BorderFactory.createEmptyBorder(8, 0, 14, 0));
         sud.add(menuButton);
-        principale.add(sud, BorderLayout.SOUTH);
+        JPanel fondo = new JPanel(new BorderLayout());
+        fondo.setOpaque(false);
+        fondo.add(messaggio, BorderLayout.NORTH);
+        fondo.add(sud, BorderLayout.SOUTH);
+        principale.add(fondo, BorderLayout.SOUTH);
 
         add(principale);
         aggiornaSchermo();
@@ -117,14 +131,19 @@ public class OthelloGame extends JFrame {
 
     // Chiamato quando il giocatore umano clicca su una cella
     private void gestisciMossaUmano(int riga, int colonna) {
-        if (animazione.inCorso()) return;
+        if (finita || animazione.inCorso()) return;
         if (controIA && turno != NERO) return; // contro IA: il giocatore e' solo il Nero
-        if (!mossaValida(riga, colonna, turno)) return;
+        if (!mossaValida(riga, colonna, turno)) {
+            messaggio.setText("Scegli una casella vuota che chiuda almeno una pedina avversaria.");
+            return;
+        }
 
         giocaMossa(riga, colonna);
     }
 
     private void giocaMossa(int riga, int colonna) {
+        String colore = turno == NERO ? "Nero" : "Bianco";
+        messaggio.setText(colore + " gioca in " + (char) ('A' + colonna) + (riga + 1) + ".");
         eseguiMossa(riga, colonna, turno);
         animazione.avvia(tavola, riga, colonna, () -> {
             turno = (turno == NERO) ? BIANCO : NERO;
@@ -140,12 +159,9 @@ public class OthelloGame extends JFrame {
         }
 
         if (!esisteMossaValida(turno)) {
-            // il giocatore di turno non puo' muovere: si passa
+            String colore = turno == NERO ? "Il Nero" : "Il Bianco";
+            messaggio.setText(colore + " passa perché non ha mosse disponibili.");
             turno = (turno == NERO) ? BIANCO : NERO;
-            if (!esisteMossaValida(turno)) {
-                mostraRisultato();
-                return;
-            }
         }
 
         aggiornaSchermo();
@@ -314,20 +330,10 @@ public class OthelloGame extends JFrame {
     }
 
     private void mostraRisultato() {
-        int pezziNeri = contaPezzi(NERO);
-        int pezziBianchi = contaPezzi(BIANCO);
-        String messaggio;
-
-        if (pezziNeri > pezziBianchi) {
-            messaggio = (controIA ? "Hai vinto!" : "Ha vinto il Nero!")
-                    + " Nero: " + pezziNeri + " - Bianco: " + pezziBianchi;
-        } else if (pezziBianchi > pezziNeri) {
-            messaggio = (controIA ? "Ha vinto l'IA." : "Ha vinto il Bianco!")
-                    + " Nero: " + pezziNeri + " - Bianco: " + pezziBianchi;
-        } else {
-            messaggio = "Pareggio! " + pezziNeri + " - " + pezziBianchi;
-        }
-
+        finita = true;
+        String messaggio = Archivio.risultato(contaPezzi(NERO), contaPezzi(BIANCO), controIA);
+        Archivio.registra(this, nomeModalita, messaggio);
+        this.messaggio.setText("Partita terminata.");
         statoLabel.setText(messaggio);
         JOptionPane.showMessageDialog(this, messaggio, "Partita terminata", JOptionPane.INFORMATION_MESSAGE);
     }

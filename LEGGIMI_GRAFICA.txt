@@ -26,16 +26,7 @@ Casella.java disegna le pedine con Swing e AWT. AnimazioneMossa.java
 usa un Timer Swing condiviso dalle caselle della stessa scacchiera.
 Sfondo.java conserva una copia del disegno fino al ridimensionamento.
 
-PARTE DI RICCARDO
-Come indicato nel README originale, non sono state sviluppate:
-- cronologia delle partite;
-- schermata delle impostazioni;
-- nuove funzioni per messaggi e risultati.
-I messaggi, i punteggi e la funzione finale gia' presenti sono invariati.
-Il pulsante Impostazioni conserva l'azione originale sulla console.
-
-VERIFICHE
-Compilazione con javac, controllo visivo delle tre schermate,
-prova di una cattura multigiocatore e di una mossa per ogni livello IA.
-Confronto con l'originale: DiffAI e la logica della partita invariati.
-README.TXT e relazione PDF originali sono conservati.
+ALLENAMENTO E MENU
+Il fumetto entra con un breve movimento e mostra il testo parola per parola.
+Le impostazioni del menu permettono di leggere subito il testo completo
+oppure di ingrandire i caratteri. Cronologia partite mostra i risultati.

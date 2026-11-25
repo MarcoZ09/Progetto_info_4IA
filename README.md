@@ -21,9 +21,28 @@ java -jar Othello.jar
 | --- | --- |
 | Contro l’IA | Giochi con il Nero. Al livello **Facile** il computer sceglie una mossa legale a caso. Al **Medio** cerca la mossa che gira più pedine. Al **Difficile** valuta anche la posizione sulla scacchiera e dà priorità agli angoli. |
 | Multigiocatore locale | Due giocatori si alternano sullo stesso computer. Il tabellone mostra il turno e il numero di pedine per colore. |
-| Allenamento | Othellity suggerisce una casella e spiega la scelta. Per esempio, ti avverte quando giocare vicino a un angolo vuoto può aiutare l’avversario a conquistarlo. |
+| Allenamento | Tu giochi con il Nero. Othellity indica una casella in oro, spiega la mossa nel fumetto e commenta la risposta del Bianco. |
 
 ![Othellity, la mascotte della modalità Allenamento](Immagini/Othellity-Happy.gif)
+
+## Come ragiona il bot in Allenamento
+
+Il bot scorre le 64 caselle con due cicli `for`. Per ogni mossa legale parte da un punto per ogni pedina che può girare. Con tre condizioni controlla la posizione e applica il primo caso valido.
+
+| Posizione | Variazione del punteggio |
+| --- | --- |
+| Angolo | +100 |
+| Casella accanto a un angolo ancora vuoto, anche in diagonale | −50 |
+| Altra casella sul bordo | +10 |
+| Altra casella interna | 0 |
+
+Esempio: girare una pedina in A1 vale 101 punti. Girarne tre al centro vale 3. Il bot sceglie A1 perché una pedina nell’angolo resta del suo colore per tutta la partita. A parità di punti sceglie la prima casella trovata. Othellity usa lo stesso calcolo per suggerirti una mossa.
+
+## Impostazioni e cronologia
+
+Dal menu principale apri **Impostazioni** per scegliere se far apparire il testo parola per parola e se usare caratteri più grandi nel fumetto. Le scelte valgono dal prossimo allenamento e vengono conservate alla chiusura del gioco.
+
+In **Cronologia partite** trovi le partite concluse in tutte e tre le modalità, dalla più recente, con data, modalità, esito e punteggio. Se esci a metà, la partita non viene registrata. I file `partite.txt` e `impostazioni.txt` si trovano nella cartella `Othello4IA` del tuo profilo utente.
 
 ## Le regole in breve
 
@@ -41,16 +60,17 @@ Per ricompilare serve un **JDK** con i comandi `javac` e `jar` disponibili nel t
 | [OthelloGame.java](OthelloGame.java) | Scacchiera, mosse legali, cambio di turno e risultato della partita. |
 | [DiffAI.java](DiffAI.java) | Criteri con cui il computer sceglie una mossa nei tre livelli. |
 | [Allenamento.java](Allenamento.java) | Partita guidata, suggerimenti e fumetti di Othellity. |
+| [Archivio.java](Archivio.java) | Impostazioni, risultati e cronologia delle partite. |
 | [Stile.java](Stile.java) e [Immagini](Immagini/) | Aspetto dell’interfaccia e risorse grafiche. |
 
 ## Gruppo di lavoro
 
-La tabella riporta la divisione dei compiti prevista dal gruppo. La schermata **Impostazioni** e la **cronologia delle partite** sono ancora da completare.
+La tabella riporta la divisione dei compiti del gruppo.
 
 | Membro | Compiti assegnati |
 | --- | --- |
 | Marco Zinant | Coordinamento, menu iniziale, scelta della modalità e logica della partita contro l’IA. |
-| Riccardo Mazza | Cronologia delle partite, messaggi di gioco, impostazioni e avvio su Windows. |
+| Riccardo Mazza | Cronologia delle partite, messaggi di gioco, impostazioni, avvio su Windows e allenamento. |
 | Samuel Michelini | Livelli di difficoltà dell’IA, interfaccia della partita e gestione dei turni in multigiocatore. |
 
 [Leggi la relazione del progetto (PDF)](Relazione_Progetto_Othello.pdf)

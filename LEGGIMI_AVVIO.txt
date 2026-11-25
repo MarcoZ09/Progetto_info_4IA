@@ -12,13 +12,8 @@ Puoi anche avviare da terminale con: java -jar Othello.jar
 Sono inclusi tutti i sorgenti Java. Se li modifichi, usa COMPILA.bat
 per ricreare Othello.jar (per compilare serve il JDK).
 
-Disponibili: partita locale a due giocatori e partita contro il
-computer con difficolta' facile, media e difficile.
-
-Come richiesto, la parte di Riccardo non e' stata sviluppata:
-cronologia assente, impostazioni ancora come nell'originale,
-messaggi e risultati gia' presenti conservati senza modifiche.
-Il pulsante Impostazioni scrive soltanto sulla console.
+Nel menu Gioca trovi Allenamento, Multigiocatore e Contro IA.
+Dal menu principale puoi aprire Impostazioni e Cronologia partite.
+La cronologia conserva il risultato e il punteggio di ogni partita conclusa.
 
 La grafica usa Swing e AWT, senza librerie esterne.
-Per le modifiche grafiche consulta LEGGIMI_GRAFICA.txt.

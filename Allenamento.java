@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
-import java.util.Random;
 
 public class Allenamento extends JFrame {
 
@@ -31,7 +30,12 @@ public class Allenamento extends JFrame {
         return new ImageIcon(gif.getImage().getScaledInstance(lato, lato, Image.SCALE_REPLICATE));
     }
 
-    private Random casuale = new Random();
+    private JPanel spazioNuvola = new JPanel(new BorderLayout());
+    private Timer scrittura = new Timer(45, e -> avanzaFumetto());
+    private String frase;
+    private int lettereVisibili;
+    private boolean animaFumetto;
+    private String ultimaMossaBot = "";
     private Timer timer;
 
     private boolean attesa = false;
@@ -45,7 +49,9 @@ public class Allenamento extends JFrame {
     private Color sfondo = new Color(19, 38, 34);
 
     public Allenamento() {
-        setTitle("Allenamento con Maestro Pedina");
+        Archivio.caricaImpostazioni(this);
+        animaFumetto = Archivio.animaFumetto;
+        setTitle("Allenamento con Othellity");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel principale = new Sfondo(new BorderLayout(0, 12));
@@ -62,7 +68,7 @@ public class Allenamento extends JFrame {
         chiudi.addActionListener(e -> dispose());
         JPanel fondo = new JPanel(new BorderLayout());
         fondo.setOpaque(false);
-        JLabel guida = etichetta("Casella dorata = mossa consigliata");
+        JLabel guida = etichetta("Il bordo dorato indica il consiglio di Othellity.");
         fondo.add(guida, BorderLayout.WEST);
         fondo.add(chiudi, BorderLayout.EAST);
         principale.add(fondo, BorderLayout.SOUTH);
@@ -78,7 +84,7 @@ public class Allenamento extends JFrame {
         }
 
         consiglio(
-                "Ciao! Sono Maestro Pedina. Tu giochi con il Nero. "
+                "Tu giochi con il Nero. "
         );
         aggiorna();
 
@@ -115,10 +121,6 @@ public class Allenamento extends JFrame {
     }
 
     private JPanel pannelloMaestro() {
-        return pannelloDialogo(mascotte, fumetto);
-    }
-
-    static JPanel pannelloDialogo(JLabel mascotte, JTextArea fumetto) {
         JPanel maestro = new JPanel(new BorderLayout(4, 0));
         maestro.setOpaque(false);
         maestro.setPreferredSize(new Dimension(530, 196));
@@ -172,14 +174,14 @@ public class Allenamento extends JFrame {
         };
         nuvola.setOpaque(false);
         nuvola.setBorder(BorderFactory.createEmptyBorder(16, 30, 17, 17));
-        JLabel nome = new JLabel("Maestro Pedina");
+        JLabel nome = new JLabel("Othellity  ·  Il tuo allenatore");
         nome.setFont(new Font("SansSerif", Font.BOLD, 16));
         nome.setForeground(new Color(64, 98, 51));
         nuvola.add(nome, BorderLayout.NORTH);
         fumetto.setEditable(false);
         fumetto.setLineWrap(true);
         fumetto.setWrapStyleWord(true);
-        fumetto.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        fumetto.setFont(new Font("SansSerif", Font.PLAIN, Archivio.testoGrande ? 21 : 17));
         fumetto.setForeground(new Color(42, 47, 40));
         fumetto.setOpaque(false);
         JScrollPane testo = new JScrollPane(fumetto);
@@ -188,7 +190,9 @@ public class Allenamento extends JFrame {
         testo.getViewport().setOpaque(false);
         testo.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         nuvola.add(testo, BorderLayout.CENTER);
-        maestro.add(nuvola, BorderLayout.CENTER);
+        spazioNuvola.setOpaque(false);
+        spazioNuvola.add(nuvola, BorderLayout.CENTER);
+        maestro.add(spazioNuvola, BorderLayout.CENTER);
         return maestro;
     }
 
@@ -313,9 +317,9 @@ public class Allenamento extends JFrame {
         return false;
     }
 
-    // Valutazione semplice della mossa del giocatore.
-    private int punti(int r, int c) {
-        int valore = catture(r, c, 1, false);
+    // Lo stesso criterio guida il bot bianco e i consigli per il Nero.
+    private int punti(int r, int c, int pedineGirate) {
+        int valore = pedineGirate;
 
         if (angolo(r, c)) {
             valore += 100;
@@ -333,23 +337,10 @@ public class Allenamento extends JFrame {
     }
 
     private String motivo(int r, int c) {
-        String testo;
-
-        if (angolo(r, c)) {
-            testo = "Un angolo non puo' essere "
-                    + "riconquistato dall'avversario.";
-        } else if (rischio(r, c)) {
-            testo = "Attenzione: vicino a un angolo vuoto "
-                    + "rischi di facilitarne la conquista.";
-        } else if (r == 0 || r == 7 || c == 0 || c == 7) {
-            testo = "Il bordo puo' essere utile, "
-                    + "ma non e' sicuro come un angolo.";
-        } else {
-            testo = "Qui non sei vicino a un angolo vuoto. "
-                    + "Guarda anche le future risposte avversarie.";
-        }
-
-        return testo;
+        if (angolo(r, c)) return "Una pedina nell’angolo è tua fino alla fine.";
+        if (rischio(r, c)) return "Occhio all’angolo vuoto vicino. Il Bianco potrebbe conquistarlo.";
+        if (r == 0 || r == 7 || c == 0 || c == 7) return "Sul bordo puoi essere attaccato da meno direzioni.";
+        return "Con questa mossa giri pedine all’interno della scacchiera.";
     }
 
     private String numeroPedine(int numero) {
@@ -360,37 +351,54 @@ public class Allenamento extends JFrame {
     }
 
     private void parla(String testo) {
-        fumetto.setText(testo);
+        scrittura.stop();
+        frase = testo;
+        lettereVisibili = 0;
+        if (animaFumetto) {
+            avanzaFumetto();
+            if (lettereVisibili < frase.length()) scrittura.start();
+        } else {
+            fumetto.setText(frase);
+        }
         fumetto.setCaretPosition(0);
     }
 
-    private void consiglio(String inizio) {
-        suggeritaR = -1;
-        suggeritaC = -1;
+    // A ogni scatto compare una parola e la nuvola entra di pochi pixel.
+    private void avanzaFumetto() {
+        int spazio = frase.indexOf(' ', lettereVisibili);
+        lettereVisibili = spazio < 0 ? frase.length() : spazio + 1;
+        int margine = Math.max(0, 16 - lettereVisibili);
+        spazioNuvola.setBorder(BorderFactory.createEmptyBorder(margine, 0, 0, 0));
+        fumetto.setText(frase.substring(0, lettereVisibili));
+        fumetto.setCaretPosition(0);
+        if (lettereVisibili == frase.length()) scrittura.stop();
+    }
 
-        int migliore = -1000;
-
+    private Move mossaMigliore(int colore) {
+        Move scelta = null;
+        int migliore = Integer.MIN_VALUE;
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
-                if (catture(r, c, 1, false) > 0
-                        && punti(r, c) > migliore) {
-                    migliore = punti(r, c);
-                    suggeritaR = r;
-                    suggeritaC = c;
+                int girate = catture(r, c, colore, false);
+                if (girate == 0) continue;
+                int valore = punti(r, c, girate);
+                if (valore > migliore) {
+                    migliore = valore;
+                    scelta = new Move(r, c);
                 }
             }
         }
+        return scelta;
+    }
 
-        if (suggeritaR != -1) {
-            pedineConsigliate = catture(suggeritaR, suggeritaC, 1, false);
-            parla(
-                    inizio
-                    + "Ti consiglio "
-                    + nome(suggeritaR, suggeritaC)
-                    + ": qui catturi " + numeroPedine(pedineConsigliate) + ". "
-                    + motivo(suggeritaR, suggeritaC)
-            );
-        }
+    private void consiglio(String inizio) {
+        Move scelta = mossaMigliore(1);
+        if (scelta == null) return;
+        suggeritaR = scelta.getRow();
+        suggeritaC = scelta.getCol();
+        pedineConsigliate = catture(suggeritaR, suggeritaC, 1, false);
+        parla(inizio + "Prova " + nome(suggeritaR, suggeritaC) + " per girare "
+                + numeroPedine(pedineConsigliate) + ". " + motivo(suggeritaR, suggeritaC));
     }
 
     private boolean puoMuovere(int colore) {
@@ -412,32 +420,25 @@ public class Allenamento extends JFrame {
 
         int pedinePrese = catture(r, c, 1, false);
         if (pedinePrese == 0) {
-            consiglio(
-                    "Mossa non valida: devi chiudere almeno "
-                    + "una pedina bianca tra due nere. "
-            );
+            mascotte.setIcon(occhiali);
+            String aiuto = "Da qui non racchiudi nessuna pedina bianca. ";
+            if (tavola[r][c] != 0) aiuto = nome(r, c) + " è già occupata. ";
+            consiglio(aiuto);
             return;
         }
 
-        String commento = "Hai scelto " + nome(r, c) + ". ";
-
-        // Confronta la tua cattura con il numero mostrato nel fumetto.
         consiglioSeguito = (r == suggeritaR && c == suggeritaC);
+        String commento = "Hai giocato in ";
         if (consiglioSeguito) {
             mascotte.setIcon(felice);
-            commento = "Hai seguito il consiglio! ";
+            commento = "Hai seguito il consiglio in ";
         } else if (pedinePrese > pedineConsigliate) {
             mascotte.setIcon(occhiali);
         } else {
             mascotte.setIcon(neutra);
         }
-
-        commento += "Hai catturato " + numeroPedine(pedinePrese) + ". ";
-        if (!consiglioSeguito) {
-            commento += "Il mio consiglio era da " + numeroPedine(pedineConsigliate) + ". ";
-        }
-        parla(commento + motivo(r, c) + " Ora tocca al bot...");
-
+        parla(commento + nome(r, c) + " e girato " + numeroPedine(pedinePrese) + ". " + motivo(r, c));
+        attesa = true;
         catture(r, c, 1, true);
         tavola[r][c] = 1;
 
@@ -457,23 +458,12 @@ public class Allenamento extends JFrame {
 
             int neri = conta(1);
             int bianchi = conta(2);
-            String risultato = "Pareggio!";
-
-            if (neri > bianchi) {
-                risultato = "Hai vinto!";
-            }
-
-            if (bianchi > neri) {
-                risultato = "Ha vinto il bot.";
-            }
-
-            parla(
-                    risultato
-                    + " Nero: " + neri
-                    + ", Bianco: " + bianchi
-                    + ". Ricorda: catturare tante pedine "
-                    + "subito non basta per vincere."
-            );
+            String risultato = Archivio.risultato(neri, bianchi, true);
+            if (neri > bianchi) mascotte.setIcon(felice);
+            else if (neri < bianchi) mascotte.setIcon(triste);
+            else mascotte.setIcon(neutra);
+            parla(risultato);
+            Archivio.registra(this, "Allenamento", risultato);
             return;
         }
 
@@ -494,7 +484,7 @@ public class Allenamento extends JFrame {
 
         if (attesa) {
             if (!avviso.isEmpty()) {
-                parla(avviso);
+                parla(ultimaMossaBot + avviso);
             }
 
             // La pausa permette di leggere il commento.
@@ -502,50 +492,31 @@ public class Allenamento extends JFrame {
             timer.setRepeats(false);
             timer.start();
         } else {
-            consiglio(avviso);
+            consiglio(ultimaMossaBot + avviso);
+            ultimaMossaBot = "";
         }
 
         aggiorna();
     }
 
-    // Bot facile: sceglie casualmente una mossa valida.
     private void mossaBot() {
-        if (finita || !isDisplayable()) {
+        if (finita || !isDisplayable()) return;
+        Move scelta = mossaMigliore(2);
+        if (scelta == null) {
+            prossimoTurno(1);
             return;
         }
-
-        int[][] mosse = new int[64][2];
-        int numero = 0;
-
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                if (catture(r, c, 2, false) > 0) {
-                    mosse[numero][0] = r;
-                    mosse[numero][1] = c;
-                    numero++;
-                }
-            }
-        }
-
-        if (numero > 0) {
-            int scelta = casuale.nextInt(numero);
-            int r = mosse[scelta][0];
-            int c = mosse[scelta][1];
-
-            boolean botEraAvanti = conta(2) > conta(1);
-            int pedinePerse = catture(r, c, 2, true);
-            tavola[r][c] = 2;
-
-            // Il sorpasso ha la precedenza sulla perdita di una pedina.
-            if (!botEraAvanti && conta(2) > conta(1)) {
-                mascotte.setIcon(triste);
-            } else if (!consiglioSeguito && pedinePerse > 0) {
-                mascotte.setIcon(arrabbiata);
-            }
-            animazione.avvia(tavola, r, c, () -> prossimoTurno(1));
-        } else {
-            prossimoTurno(1);
-        }
+        int r = scelta.getRow();
+        int c = scelta.getCol();
+        int girate = catture(r, c, 2, true);
+        tavola[r][c] = 2;
+        ultimaMossaBot = "Il Bianco ha giocato in " + nome(r, c) + " e girato "
+                + numeroPedine(girate) + ". ";
+        if (angolo(r, c)) mascotte.setIcon(arrabbiata);
+        else mascotte.setIcon(occhiali);
+        aggiorna();
+        stato.setText("Mossa del Bianco");
+        animazione.avvia(tavola, r, c, () -> prossimoTurno(1));
     }
 
     private int conta(int colore) {
@@ -588,6 +559,7 @@ public class Allenamento extends JFrame {
 
     @Override
     public void dispose() {
+        scrittura.stop();
         animazione.ferma();
         if (timer != null) {
             timer.stop();

@@ -48,7 +48,7 @@ public class MainMenu extends JFrame {
         titoli.add(Stile.etichetta("Due colori. Una nuova sfida.", 17, Stile.TESTO));
         panel.add(titoli, BorderLayout.NORTH);
 
-        JPanel pulsanti = new JPanel(new GridLayout(3, 1, 0, 14));
+        JPanel pulsanti = new JPanel(new GridLayout(4, 1, 0, 12));
         pulsanti.setOpaque(false);
         JButton giocaButton = new MinecraftButton("Gioca");
         JButton impostazioniButton = new MinecraftButton("Impostazioni");
@@ -58,11 +58,10 @@ public class MainMenu extends JFrame {
             Stile.cambiaSchermata(this, new ModalitaGioco());
         });
 
-        // Azione: Impostazioni
-        impostazioniButton.addActionListener(e -> {
-            System.out.println("Hai scelto: Impostazioni");
-            // Qui in futuro andra' il codice per aprire la schermata delle impostazioni
-        });
+        Archivio.caricaImpostazioni(this);
+        impostazioniButton.addActionListener(e -> Archivio.impostazioni(this));
+        JButton cronologiaButton = new MinecraftButton("Cronologia partite");
+        cronologiaButton.addActionListener(e -> Archivio.cronologia(this));
 
         // Azione: Esci dal gioco
         esciButton.addActionListener(e -> {
@@ -71,6 +70,7 @@ public class MainMenu extends JFrame {
 
         pulsanti.add(giocaButton);
         pulsanti.add(impostazioniButton);
+        pulsanti.add(cronologiaButton);
         pulsanti.add(esciButton);
         panel.add(pulsanti, BorderLayout.CENTER);
         panel.add(Stile.etichetta("8 x 8  /  NERO E BIANCO", 14, Stile.ORO), BorderLayout.SOUTH);
@@ -85,13 +85,14 @@ public class MainMenu extends JFrame {
         String nomeFile = "SfondoOthello.png";
 
         // Percorso standard per risorse incluse nel classpath.
-        URL risorsa = MainMenu.class.getResource("/Immagini/" + nomeFile);
+        URL risorsa = MainMenu.class.getResource("/" + nomeFile);
         if (risorsa != null) {
             return new ImageIcon(risorsa).getImage();
         }
 
         // Percorsi alternativi per progetti avviati direttamente dall'IDE.
         String[] percorsi = {
+            nomeFile,
             "Immagini/" + nomeFile,
             "src/Immagini/" + nomeFile,
             "src/main/resources/Immagini/" + nomeFile
