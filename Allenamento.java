@@ -420,7 +420,7 @@ public class Allenamento extends JFrame {
 
         int pedinePrese = catture(r, c, 1, false);
         if (pedinePrese == 0) {
-            mascotte.setIcon(occhiali);
+            mascotte.setIcon(neutra);
             String aiuto = "Da qui non racchiudi nessuna pedina bianca. ";
             if (tavola[r][c] != 0) aiuto = nome(r, c) + " è già occupata. ";
             consiglio(aiuto);
@@ -434,6 +434,7 @@ public class Allenamento extends JFrame {
             commento = "Hai seguito il consiglio in ";
         } else if (pedinePrese > pedineConsigliate) {
             mascotte.setIcon(occhiali);
+            commento = "Hai girato più pedine del previsto! Hai giocato in ";
         } else {
             mascotte.setIcon(neutra);
         }
@@ -508,12 +509,17 @@ public class Allenamento extends JFrame {
         }
         int r = scelta.getRow();
         int c = scelta.getCol();
+        boolean biancoEraAvanti = conta(2) > conta(1);
         int girate = catture(r, c, 2, true);
         tavola[r][c] = 2;
         ultimaMossaBot = "Il Bianco ha giocato in " + nome(r, c) + " e girato "
                 + numeroPedine(girate) + ". ";
-        if (angolo(r, c)) mascotte.setIcon(arrabbiata);
-        else mascotte.setIcon(occhiali);
+        if (!biancoEraAvanti && conta(2) > conta(1)) {
+            mascotte.setIcon(triste);
+            ultimaMossaBot += "Ora il Bianco è in vantaggio. ";
+        } else if (!consiglioSeguito && girate > 0) {
+            mascotte.setIcon(arrabbiata);
+        }
         aggiorna();
         stato.setText("Mossa del Bianco");
         animazione.avvia(tavola, r, c, () -> prossimoTurno(1));
